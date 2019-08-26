@@ -16,7 +16,23 @@ import SwiftyJSON
 import SVProgressHUD
 
 // weather class is a subclass of uiview and it conforms to the rules of CLdelegate
-class WeatherViewController: UIViewController, CLLocationManagerDelegate {
+class WeatherViewController: UIViewController, CLLocationManagerDelegate, ChangeCityDelegate {
+
+    
+    @IBAction func cFToggle(_ sender: UISwitch) {
+        
+        if sender.isOn {
+            
+            temperatureLabel.text = (String ((weatherDataModel.temperature - 32) * 5/9)) + "°"
+        }
+        
+        else {
+             temperatureLabel.text = (String (weatherDataModel.temperature)) + "°"
+        }
+        
+        
+      
+    }
     
     //Constants
     let WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather"
@@ -97,7 +113,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         
         // Optional binding to prevent errors when unwrapping using !
         if let tempResult = json["main"]["temp"].double {
-            weatherDataModel.temperature = Int(tempResult - 273.15)
+            weatherDataModel.temperature = (Int(tempResult - 273.15) * 9/5 + 32)
             weatherDataModel.city = json["name"].stringValue
             weatherDataModel.condition = json["weather"][0]["id"].intValue
             weatherDataModel.weatherIconName = weatherDataModel.updateWeatherIcon(condition: weatherDataModel.condition)
@@ -125,7 +141,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         // update the city name
         cityLabel.text = weatherDataModel.city
         // update the temperature
-        temperatureLabel.text = String (weatherDataModel.temperature)
+        temperatureLabel.text = (String (weatherDataModel.temperature)) + "°"
         
         
         
@@ -177,11 +193,26 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     
     
     //Write the userEnteredANewCityName Delegate method here:
-    
-
+    func userEnteredANewCityName(city: String) {
+        // Weather api says to call city by q
+        let params : [String : String] = ["q" : city, "appid" : APP_ID]
+        getWeatherData(url: WEATHER_URL, parameters: params)
+        
+            }
     
     //Write the PrepareForSegue Method here
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "changeCityName" {
+            let destinationVC = segue.destination as! ChangeCityViewController
+            destinationVC.delegate = self
+
+    }
     
+    
+   
+    
+    
+    }
     
     
     
